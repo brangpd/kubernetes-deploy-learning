@@ -1,0 +1,36 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+   name: nfs-client-provisioner
+   namespace: monitoring
+spec:
+   selector: 
+     matchLabels: 
+       app: nfs-client-provisioner
+   replicas: 1
+   strategy:
+     type: Recreate
+   template:
+      metadata:
+         labels:
+            app: nfs-client-provisioner
+      spec:
+         serviceAccount: nfs-provisioner
+         containers:
+            -  name: nfs-client-provisioner
+               image: quay.io/external_storage/nfs-client-provisioner:latest
+               volumeMounts:
+                 -  name: nfs-client-root
+                    mountPath:  /data/opv # /persistentvolumes
+               env:
+                 -  name: PROVISIONER_NAME
+                    value: fuseim.pri/ifs
+                 -  name: NFS_SERVER
+                    value: centos8-011 
+                 -  name: NFS_PATH
+                    value: /data/opv
+         volumes:
+           - name: nfs-client-root
+             nfs:
+               server: centos8-011 # 10.42.*.*
+               path: /data/opv

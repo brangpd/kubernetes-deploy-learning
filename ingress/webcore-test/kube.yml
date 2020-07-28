@@ -1,0 +1,47 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: testwebcore-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: testwebcore
+  template:
+    metadata:
+      labels:
+        app: testwebcore
+    spec:
+      containers:
+        - name: testwebcore
+          image: brangpd/testwebcore
+          ports:
+            - containerPort: 80
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: testwebcore-service
+spec:
+  selector:
+    app: testwebcore
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+---
+
+kind: Ingress
+apiVersion: networking.k8s.io/v1beta1
+metadata:
+  name: testwebcore-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /testwebcore
+        backend:
+          serviceName: testwebcore-service
+          servicePort: 80

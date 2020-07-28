@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment 
+metadata:
+  name: my-httpd
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-httpd
+  template:
+    metadata:
+      labels:
+        app: my-httpd
+    spec:
+      containers:
+      - name: my-httpd
+        image: httpd
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-httpd
+spec:
+  selector:
+    app: my-httpd
+  ports:
+  - protocol: TCP
+    port: 80
+    name: http
+---
+kind: Ingress
+apiVersion: extensions/v1beta1
+metadata:
+  name: my-httpd
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - http:
+      paths: 
+      - path: /httpd
+        backend:
+          serviceName: my-httpd
+          servicePort: 80
